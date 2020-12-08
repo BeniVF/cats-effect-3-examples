@@ -10,7 +10,9 @@ object Main extends IOApp {
   import exercises.io._
 
   def run(args: List[String]): IO[Int] =
-    parTraverse((1 to 10).toList)(x => simulateTask(x, ((max - x)*100).millis)) >>= { x =>
+    parTraverse((1 to 10).toList)(x =>
+      simulateTask(x, ((max - x) * 100).millis)
+    ) >>= { x =>
       IO(println(x)).as(0)
     }
 
