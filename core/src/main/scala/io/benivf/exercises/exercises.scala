@@ -58,4 +58,11 @@ object exercises {
     fa
   ) >>= (_.liftTo[F])
 
+  def parTraverse[F[_]: Concurrent[*[_], Throwable], A, B](as: List[A])(
+      f: A => F[B]
+  ): F[List[B]] =
+    as.foldRight(List.empty[B].pure[F]) { case (n, acc) =>
+      Concurrent[F, Throwable].both(acc, f(n)).map { case (xs, x) => xs.+:(x) }
+    }
+
 }
