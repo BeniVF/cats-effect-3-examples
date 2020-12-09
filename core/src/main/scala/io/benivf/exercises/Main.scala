@@ -1,17 +1,17 @@
 package io.benivf.exercises
 
+import scala.concurrent.duration._
+
 import cats.effect.IOApp
 import cats.effect._
 import cats.syntax.all._
 
-import scala.concurrent.duration._
-
 object Main extends IOApp {
   val max = 10
   val permits = 2
-  import exercises.io._
+  import core._
 
-  private def timeFor(id: Int): FiniteDuration = (max - id).millis
+  private def timeFor(id: Int): FiniteDuration = 1.second + id.millis
 
   def run(args: List[String]): IO[Int] =
     putStrLn(s"Create semaphore") >>
