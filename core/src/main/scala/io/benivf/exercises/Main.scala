@@ -7,19 +7,22 @@ import cats.syntax.all._
 import scala.concurrent.duration._
 
 object Main extends IOApp {
-  val max: Int = 10
+  val max = 10
+  val permits = 2
   import exercises.io._
+
+  private def timeFor(id: Int): FiniteDuration = (max - id).millis
 
   def run(args: List[String]): IO[Int] =
     putStrLn(s"Create semaphore") >>
-      Semaphore(1) >>= { s =>
-      parTraverse((1 to 10).toList) { x =>
+      Semaphore(permits) >>= { s =>
+      parTraverse((1 to max).toList) { x =>
         s.acquire.bracket { _ =>
-          putStrLn(s"Acquire $x") >>
-            simulateTask(x, ((max - x) * 100).millis)
+          putStrLn(s"Acquired $x") >>
+            simulateTask(x, timeFor(x))
         } { _ =>
           s.release >>
-            putStrLn(s"Release $x")
+            putStrLn(s"Released $x")
         }
       }
     } >>= { result =>
