@@ -12,7 +12,7 @@ object exercises {
 
   object io {
     import cats.effect.IO
-    import cats.effect.concurrent.Ref
+    import cats.effect.concurrent._
     def time: IO[Instant] = IO(Instant.now)
     def putStrLn[A: Show](a: A): IO[Unit] = time >>= { current =>
       IO {
@@ -48,19 +48,54 @@ object exercises {
       def release: IO[Unit]
     }
     object Semaphore {
-      def apply(permits: Int): IO[Semaphore] = Ref
-        .of[IO, Int](permits)
-        .map(ref =>
-          new Semaphore {
-            def acquire: IO[Unit] = ref
-              .modify[Boolean](x => if (x == 0) (x, false) else (x - 1, true))
-              .ifM(
-                IO.unit,
-                acquire
-              )
-            def release: IO[Unit] = ref.update(_ + 1)
+
+      private[this] final case class State(
+          count: Int,
+          waiting: List[Deferred[IO, Unit]]
+      ) {
+        def wait(process: Deferred[IO, Unit]): State =
+          State(count, waiting.+:(process))
+
+        def dec(): State = State(count - 1, waiting)
+        private def inc: State = State(count + 1, waiting)
+        def pop(): (State, Option[Deferred[IO, Unit]]) =
+          if (waiting.nonEmpty)
+            (State(count, waiting.drop(1)), waiting.headOption)
+          else
+            (this.inc, None)
+
+      }
+
+      private[this] object State {
+        def apply(permits: Int): State = State(permits, List.empty)
+      }
+      def apply(permits: Int): IO[Semaphore] =
+        Ref
+          .of[IO, State](State(permits))
+          .map { state =>
+            new Semaphore {
+              def acquire: IO[Unit] =
+                Deferred[IO, Unit] >>= { process =>
+                  state
+                    .modify { x =>
+                      if (x.count == 0)
+                        (x.wait(process), false)
+                      else
+                        (x.dec(), true)
+                    }
+                    .ifM(
+                      process.complete(()),
+                      process.get
+                    )
+                }
+
+              def release: IO[Unit] = state.modify {
+                _.pop()
+              } >>= {
+                _.fold(IO.unit) { _.complete(()) }
+              }
+            }
           }
-        )
     }
 
   }
