@@ -12,6 +12,7 @@ object exercises {
 
   object io {
     import cats.effect.IO
+    import cats.effect.concurrent.Ref
     def time: IO[Instant] = IO(Instant.now)
     def putStrLn[A: Show](a: A): IO[Unit] = time >>= { current =>
       IO {
@@ -41,6 +42,26 @@ object exercises {
       as.foldRight(IO.pure(List.empty[B])) { case (n, acc) =>
         IO.both(acc, f(n)).map { case (xs, x) => xs.+:(x) }
       }
+
+    trait Semaphore {
+      def acquire: IO[Unit]
+      def release: IO[Unit]
+    }
+    object Semaphore {
+      def apply(permits: Int): IO[Semaphore] = Ref
+        .of[IO, Int](permits)
+        .map(ref =>
+          new Semaphore {
+            def acquire: IO[Unit] = ref
+              .modify[Boolean](x => if (x == 0) (x, false) else (x - 1, true))
+              .ifM(
+                IO.unit,
+                acquire
+              )
+            def release: IO[Unit] = ref.update(_ + 1)
+          }
+        )
+    }
 
   }
 
