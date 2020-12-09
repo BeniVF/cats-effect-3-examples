@@ -23,5 +23,4 @@ object Main extends IOApp {
       _ <- putStrLn(s"Done! [${result.mkString(",")}]")
     } yield 0
 
-
 }
