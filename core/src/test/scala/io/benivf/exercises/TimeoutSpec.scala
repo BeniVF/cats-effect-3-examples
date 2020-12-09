@@ -6,7 +6,7 @@ import cats.syntax.all._
 import java.util.concurrent.TimeoutException
 
 class TimeoutSpec extends munit.FunSuite {
-  import exercises.io.timeout
+  import core._
   implicit val x = unsafe.IORuntime.global
   test(
     "it should get the result when the io executes before the timeout duration"
