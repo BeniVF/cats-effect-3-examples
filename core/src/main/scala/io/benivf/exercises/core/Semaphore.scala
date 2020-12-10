@@ -35,14 +35,12 @@ object Semaphore {
 
   private[this] final class Impl(state: Ref[IO, State]) extends Semaphore {
     def acquire: IO[Unit] = Deferred[IO, Unit] >>= { process =>
-      state
-        .modify { x =>
-          if (x.count == 0)
-            (x.wait(process), process.get)
-          else
-            (x.dec(), process.complete(()))
-        }
-        .flatten
+      state.modify {
+        case x if (x.count == 0) =>
+          x.wait(process) -> process.get
+        case x =>
+          x.dec() -> IO.unit
+      }.flatten
     }
 
     def release: IO[Unit] = state.modify {
