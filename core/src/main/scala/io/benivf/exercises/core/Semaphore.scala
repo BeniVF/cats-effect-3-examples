@@ -38,14 +38,11 @@ object Semaphore {
       state
         .modify { x =>
           if (x.count == 0)
-            (x.wait(process), false)
+            (x.wait(process), process.get)
           else
-            (x.dec(), true)
+            (x.dec(), process.complete(()))
         }
-        .ifM(
-          process.complete(()),
-          process.get
-        )
+        .flatten
     }
 
     def release: IO[Unit] = state.modify {
