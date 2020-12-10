@@ -1,7 +1,8 @@
 package io.benivf.exercises.core
 
-import cats.effect._
 import scala.collection.immutable.{Queue => SQueue}
+
+import cats.effect._
 import cats.effect.concurrent._
 import cats.syntax.all._
 
