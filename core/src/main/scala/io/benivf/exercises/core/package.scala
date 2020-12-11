@@ -1,7 +1,6 @@
 package io.benivf.exercises
 
 import java.time._
-import java.util.concurrent.TimeoutException
 
 import scala.concurrent.duration._
 
