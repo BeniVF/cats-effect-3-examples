@@ -18,7 +18,7 @@ class QueueSpec extends ScalaCheckSuite {
       (Queue[String](queueSize) >>= { queue =>
         queue.put(expected) >>
           queue.take.map { actual =>
-            assertEquals(expected, actual, s"$actual === $expected")
+            assertEquals(actual, expected, s"$actual === $expected")
           }
       }).unsafeRunSync()
     }
@@ -33,8 +33,8 @@ class QueueSpec extends ScalaCheckSuite {
           expected.traverse { queue.put } >>
             expected.traverse(_ => queue.take).map { actual =>
               assertEquals(
-                expected,
                 actual,
+                expected,
                 s"${actual} === $expected"
               )
             }
@@ -54,8 +54,8 @@ class QueueSpec extends ScalaCheckSuite {
             expected.traverse(_ => IO.cede >> queue.take)
           ).map { case (_, actual) =>
             assertEquals(
-              expected.sorted,
               actual.sorted,
+              expected.sorted,
               s"${actual} should contain same elements as $expected"
             )
           }
@@ -70,7 +70,7 @@ class QueueSpec extends ScalaCheckSuite {
       (Queue[String](queueSize) >>= { queue =>
         queue.tryPut(expected).map(assert(_, "it should be able to put")) >>
           queue.take.map(actual =>
-            assertEquals(expected, actual, s"$expected === $actual")
+            assertEquals(actual, expected, s"$expected === $actual")
           )
       }).unsafeRunSync()
     }
@@ -111,7 +111,7 @@ class QueueSpec extends ScalaCheckSuite {
       (Queue[Long](queueSize) >>= { queue =>
         queue.put(expected) >>
           queue.tryTake.map(actual =>
-            assertEquals(expected.some, actual, s"$expected === $actual")
+            assertEquals(actual, expected.some, s"$expected === $actual")
           )
       }).unsafeRunSync()
     }
@@ -126,8 +126,8 @@ class QueueSpec extends ScalaCheckSuite {
           expected.parTraverse(queue.put) >>
             queue.peek.map(actual =>
               assertEquals(
-                expected.headOption,
                 actual,
+                expected.headOption,
                 s"$expected === $actual"
               )
             )
