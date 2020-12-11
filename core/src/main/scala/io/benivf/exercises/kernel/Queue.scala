@@ -30,7 +30,7 @@ object Queue {
     def hasPendingProducers: Boolean = producers.nonEmpty
     def nonEmpty: Boolean = queue.nonEmpty
 
-    def headOptFn: (State[F, A], Option[A]) =
+    def headOption: (State[F, A], Option[A]) =
       queue.headOption.fold(this -> none[A]) { case h =>
         State(
           size - 1,
@@ -146,7 +146,7 @@ object Queue {
     }.flatten
 
     def peek: F[Option[A]] = state modify {
-      _.headOptFn
+      _.headOption
     }
   }
 }
