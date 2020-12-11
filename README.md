@@ -1,6 +1,6 @@
-# cats-effect-3-exercises - A basic project [![Build Status](https://travis-ci.com/Beni/cats-effect-3-exercises.svg?branch=master)](https://travis-ci.com/Beni/cats-effect-3-exercises)
+# cats-effect-3-exercises - A basic project [![Build Status](https://travis-ci.com/benivf/cats-effect-3-exercises.svg?branch=master)](https://travis-ci.com/benivf/cats-effect-3-exercises)
 
-## [Head on over to the microsite](https://Beni.github.io/cats-effect-3-exercises)
+## [Head on over to the microsite](https://benivf.github.io/cats-effect-3-exercises)
 
 ## Quick Start
 

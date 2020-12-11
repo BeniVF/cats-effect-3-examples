@@ -3,7 +3,7 @@ layout: home
 
 ---
 
-# cats-effect-3-exercises - A basic project [![Build Status](https://travis-ci.com/Beni/cats-effect-3-exercises.svg?branch=master)](https://travis-ci.com/Beni/cats-effect-3-exercises)
+# cats-effect-3-exercises - A basic project [![Build Status](https://travis-ci.com/BeniVF/cats-effect-3-exercises.svg?branch=master)](https://travis-ci.com/BeniVF/cats-effect-3-exercises)
 
 ## Quick Start
 

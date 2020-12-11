@@ -36,11 +36,11 @@ lazy val site = project
       micrositeName := "cats-effect-3-exercises",
       micrositeDescription := "A basic project",
       micrositeAuthor := "Beni",
-      micrositeGithubOwner := "Beni",
+      micrositeGithubOwner := "BeniVF",
       micrositeGithubRepo := "cats-effect-3-exercises",
       micrositeBaseUrl := "/cats-effect-3-exercises",
       micrositeDocumentationUrl := "https://www.javadoc.io/doc/io.benivf/cats-effect-3-exercises_2.13",
-      micrositeGitterChannelUrl := "Beni/libraries", // Feel Free to Set To Something Else
+      micrositeGitterChannelUrl := "benivf/libraries", // Feel Free to Set To Something Else
       micrositeFooterText := None,
       micrositeHighlightTheme := "atom-one-light",
       micrositePalette := Map(
@@ -106,9 +106,9 @@ inThisBuild(
   List(
     organization := "io.benivf",
     developers := List(
-      Developer("Beni", "Beni", "", url("https://github.com/Beni"))
+      Developer("Beni", "Beni", "", url("https://github.com/BeniVF"))
     ),
-    homepage := Some(url("https://github.com/Beni/cats-effect-3-exercises")),
+    homepage := Some(url("https://github.com/BeniVF/cats-effect-3-exercises")),
     licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
     pomIncludeRepository := { _ => false },
     ThisBuild / testFrameworks += new TestFramework("munit.Framework"),
@@ -117,7 +117,7 @@ inThisBuild(
       "-sourcepath",
       (baseDirectory in LocalRootProject).value.getAbsolutePath,
       "-doc-source-url",
-      "https://github.com/Beni/cats-effect-3-exercises/blob/v" + version.value + "€{FILE_PATH}.scala"
+      "https://github.com/BeniVF/cats-effect-3-exercises/blob/v" + version.value + "€{FILE_PATH}.scala"
     )
   )
 )
