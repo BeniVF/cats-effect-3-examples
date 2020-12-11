@@ -18,7 +18,6 @@ package object core {
       val name = Thread.currentThread().getName()
       println(s"[${current.toEpochMilli()}:$name] ${a.show}")
     }
-
   }
 
   def simulateTask(id: Int, time: FiniteDuration): IO[String] =
@@ -27,19 +26,9 @@ package object core {
       putStrLn(s"Done $id").as(id.show)
 
   def timeout[A](io: IO[A], duration: FiniteDuration): IO[A] =
-    IO.race(
-      IO.sleep(duration)
-        .as(
-          new TimeoutException(
-            s"Unable to execute io because timeout $duration has reached!"
-          )
-        ),
-      io
-    ) >>= (IO.fromEither)
+    kernel.timeout[IO, A](io, duration)
 
   def parTraverse[A, B](as: List[A])(f: A => IO[B]): IO[List[B]] =
-    as.foldRight(IO.pure(List.empty[B])) { case (n, acc) =>
-      IO.both(acc, f(n)).map { case (xs, x) => xs.+:(x) }
-    }
+    kernel.parTraverse[IO, A, B](as)(f)
 
 }
