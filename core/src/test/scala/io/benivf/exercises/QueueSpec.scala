@@ -43,6 +43,27 @@ class QueueSpec extends ScalaCheckSuite {
   }
 
   property(
+    "it should be able to put and take multiple elements concurrently"
+  ) {
+    val positiveInt = Gen.choose(1, 1000)
+    forAll(positiveInt, Gen.listOf[Int](positiveInt)) {
+      (queueSize: Int, expected: List[Int]) =>
+        (Queue[Int](queueSize) >>= { queue =>
+          IO.both(
+            expected.traverse { queue.put(_) },
+            expected.traverse(_ => IO.cede >> queue.take)
+          ).map { case (_, actual) =>
+            assertEquals(
+              expected.sorted,
+              actual.sorted,
+              s"${actual} should contain same elements as $expected"
+            )
+          }
+        }).unsafeRunSync()
+    }
+  }
+
+  property(
     "it should try put when the queue is not full"
   ) {
     forAll(positiveInt, Gen.alphaStr) { (queueSize: Int, expected: String) =>
