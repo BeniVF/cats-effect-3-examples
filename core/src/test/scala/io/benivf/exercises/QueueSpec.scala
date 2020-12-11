@@ -10,6 +10,12 @@ import org.scalacheck.Prop._
 class QueueSpec extends ScalaCheckSuite {
   import core._
   implicit val x = unsafe.IORuntime.global
+
+  override def scalaCheckTestParameters =
+    super.scalaCheckTestParameters
+      .withMinSuccessfulTests(10)
+      .withMaxDiscardRatio(1)
+
   val positiveInt = Gen.choose(1, Int.MaxValue)
 
   property(
