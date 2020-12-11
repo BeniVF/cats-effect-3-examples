@@ -4,7 +4,7 @@
 
 ## Quick Start
 
-To use cats-effect-3-exercises in an existing SBT project with Scala 2.11 or a later version, add the following dependencies to your
+To use cats-effect-3-exercises in an existing SBT project with Scala 2.13 or a later version, add the following dependencies to your
 `build.sbt` depending on your needs:
 
 ```scala
@@ -12,3 +12,5 @@ libraryDependencies ++= Seq(
   "io.benivf" %% "cats-effect-3-exercises" % "<version>"
 )
 ```
+
+
