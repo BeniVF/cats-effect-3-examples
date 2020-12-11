@@ -7,6 +7,7 @@ trait Semaphore {
   def acquire: IO[Unit]
   def release: IO[Unit]
 }
+
 object Semaphore {
 
   def apply(permits: Int): IO[Semaphore] =

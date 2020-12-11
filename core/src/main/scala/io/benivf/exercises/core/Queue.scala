@@ -10,7 +10,9 @@ trait Queue[A] {
   def tryTake: IO[Option[A]]
   def peek: IO[Option[A]]
 }
+
 object Queue {
+
   def apply[A](length: Int): IO[Queue[A]] =
     kernel.Queue[IO, A](length).map { x =>
       new Queue[A] {

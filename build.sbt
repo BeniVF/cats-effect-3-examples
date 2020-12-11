@@ -92,11 +92,11 @@ lazy val commonSettings = Seq(
   ),
   addCompilerPlugin("com.olegpy" %% "better-monadic-for" % betterMonadicForV),
   libraryDependencies ++= Seq(
-    "org.typelevel" %% "cats-core" % catsV,
-    "org.typelevel" %% "cats-effect" % catsEffectV,
-    "co.fs2" %% "fs2-core" % fs2V,
-    "co.fs2" %% "fs2-io" % fs2V,
-    "org.scalameta" %% "munit" % mUnitV % Test,
+    "org.typelevel" %% "cats-core"        % catsV,
+    "org.typelevel" %% "cats-effect"      % catsEffectV,
+    "co.fs2"        %% "fs2-core"         % fs2V,
+    "co.fs2"        %% "fs2-io"           % fs2V,
+    "org.scalameta" %% "munit"            % mUnitV % Test,
     "org.scalameta" %% "munit-scalacheck" % mUnitV % Test
   )
 )

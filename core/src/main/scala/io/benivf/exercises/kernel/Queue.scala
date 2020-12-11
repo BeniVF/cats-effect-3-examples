@@ -14,7 +14,9 @@ trait Queue[F[_], A] {
   def tryTake: F[Option[A]]
   def peek: F[Option[A]]
 }
+
 object Queue {
+
   def apply[F[_]: Async, A](length: Int): F[Queue[F, A]] =
     Ref.of[F, State[F, A]](State.empty).map(new Impl[F, A](length, _))
 
@@ -84,6 +86,7 @@ object Queue {
   }
 
   private[this] object State {
+
     def empty[F[_], A]: State[F, A] =
       State(0, SQueue.empty, SQueue.empty, SQueue.empty)
   }
@@ -92,6 +95,7 @@ object Queue {
       total: Int,
       state: Ref[F, State[F, A]]
   ) extends Queue[F, A] {
+
     def put(a: A): F[Unit] = Deferred[F, Unit] >>= { producer =>
       state.modify {
         case s if s.size < total =>

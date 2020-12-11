@@ -31,13 +31,12 @@ class SemaphoreSpec extends munit.FunSuite {
       (1 to 10).toList.traverse(_ => s.acquire) >>
         expected
           .pure[IO]
-          .flatTap(_ => (1 to 10).toList.traverse(_ => s.release)) >>= {
-        actual =>
-          assertEquals(
-            expected,
-            actual,
-            "it should get here"
-          ).pure[IO]
+          .flatTap(_ => (1 to 10).toList.traverse(_ => s.release)) >>= { actual =>
+        assertEquals(
+          expected,
+          actual,
+          "it should get here"
+        ).pure[IO]
       }
 
     }

@@ -6,6 +6,7 @@ import cats.syntax.all._
 import munit.ScalaCheckSuite
 import org.scalacheck.Gen
 import org.scalacheck.Prop._
+
 class QueueSpec extends ScalaCheckSuite {
   import core._
   implicit val x = unsafe.IORuntime.global
@@ -27,18 +28,17 @@ class QueueSpec extends ScalaCheckSuite {
   property(
     "it should be able to put and take multiple elements"
   ) {
-    forAll(positiveInt, Gen.listOf[Int](positiveInt)) {
-      (queueSize: Int, expected: List[Int]) =>
-        (Queue[Int](queueSize) >>= { queue =>
-          expected.traverse { queue.put } >>
-            expected.traverse(_ => queue.take).map { actual =>
-              assertEquals(
-                actual,
-                expected,
-                s"${actual} === $expected"
-              )
-            }
-        }).unsafeRunSync()
+    forAll(positiveInt, Gen.listOf[Int](positiveInt)) { (queueSize: Int, expected: List[Int]) =>
+      (Queue[Int](queueSize) >>= { queue =>
+        expected.traverse(queue.put) >>
+          expected.traverse(_ => queue.take).map { actual =>
+            assertEquals(
+              actual,
+              expected,
+              s"${actual} === $expected"
+            )
+          }
+      }).unsafeRunSync()
     }
   }
 
@@ -46,20 +46,19 @@ class QueueSpec extends ScalaCheckSuite {
     "it should be able to put and take multiple elements concurrently"
   ) {
     val positiveInt = Gen.choose(1, 1000)
-    forAll(positiveInt, Gen.listOf[Int](positiveInt)) {
-      (queueSize: Int, expected: List[Int]) =>
-        (Queue[Int](queueSize) >>= { queue =>
-          IO.both(
-            expected.traverse { queue.put(_) },
-            expected.traverse(_ => IO.cede >> queue.take)
-          ).map { case (_, actual) =>
-            assertEquals(
-              actual.sorted,
-              expected.sorted,
-              s"${actual} should contain same elements as $expected"
-            )
-          }
-        }).unsafeRunSync()
+    forAll(positiveInt, Gen.listOf[Int](positiveInt)) { (queueSize: Int, expected: List[Int]) =>
+      (Queue[Int](queueSize) >>= { queue =>
+        IO.both(
+          expected.traverse(queue.put(_)),
+          expected.traverse(_ => IO.cede >> queue.take)
+        ).map { case (_, actual) =>
+          assertEquals(
+            actual.sorted,
+            expected.sorted,
+            s"${actual} should contain same elements as $expected"
+          )
+        }
+      }).unsafeRunSync()
     }
   }
 
@@ -69,9 +68,7 @@ class QueueSpec extends ScalaCheckSuite {
     forAll(positiveInt, Gen.alphaStr) { (queueSize: Int, expected: String) =>
       (Queue[String](queueSize) >>= { queue =>
         queue.tryPut(expected).map(assert(_, "it should be able to put")) >>
-          queue.take.map(actual =>
-            assertEquals(actual, expected, s"$expected === $actual")
-          )
+          queue.take.map(actual => assertEquals(actual, expected, s"$expected === $actual"))
       }).unsafeRunSync()
     }
   }
@@ -97,9 +94,7 @@ class QueueSpec extends ScalaCheckSuite {
   ) {
     forAll(positiveInt) { (queueSize: Int) =>
       (Queue[Float](queueSize) >>= { queue =>
-        queue.tryTake.map(x =>
-          assert(x.isEmpty, "it should not be elements in the queue")
-        )
+        queue.tryTake.map(x => assert(x.isEmpty, "it should not be elements in the queue"))
       }).unsafeRunSync()
     }
   }
@@ -110,9 +105,7 @@ class QueueSpec extends ScalaCheckSuite {
     forAll(positiveInt, Gen.long) { (queueSize: Int, expected: Long) =>
       (Queue[Long](queueSize) >>= { queue =>
         queue.put(expected) >>
-          queue.tryTake.map(actual =>
-            assertEquals(actual, expected.some, s"$expected === $actual")
-          )
+          queue.tryTake.map(actual => assertEquals(actual, expected.some, s"$expected === $actual"))
       }).unsafeRunSync()
     }
   }
@@ -120,18 +113,17 @@ class QueueSpec extends ScalaCheckSuite {
   property(
     "it should peek when the queue has multiple elements"
   ) {
-    forAll(positiveInt, Gen.listOf(positiveInt)) {
-      (queueSize: Int, expected: List[Int]) =>
-        (Queue[Int](queueSize) >>= { queue =>
-          expected.parTraverse(queue.put) >>
-            queue.peek.map(actual =>
-              assertEquals(
-                actual,
-                expected.headOption,
-                s"$expected === $actual"
-              )
+    forAll(positiveInt, Gen.listOf(positiveInt)) { (queueSize: Int, expected: List[Int]) =>
+      (Queue[Int](queueSize) >>= { queue =>
+        expected.parTraverse(queue.put) >>
+          queue.peek.map(actual =>
+            assertEquals(
+              actual,
+              expected.headOption,
+              s"$expected === $actual"
             )
-        }).unsafeRunSync()
+          )
+      }).unsafeRunSync()
     }
   }
 

@@ -9,6 +9,7 @@ trait Semaphore[F[_]] {
   def acquire: F[Unit]
   def release: F[Unit]
 }
+
 object Semaphore {
 
   def apply[F[_]: Async](permits: Int): F[Semaphore[F]] = Ref
@@ -19,10 +20,12 @@ object Semaphore {
       count: Int,
       waiting: List[Deferred[F, Unit]]
   ) {
+
     def wait(process: Deferred[F, Unit]): State[F] =
       State(count, waiting.+:(process))
     def dec(): State[F] = State(count - 1, waiting)
     private def inc: State[F] = State(count + 1, waiting)
+
     def pop(): (State[F], Option[Deferred[F, Unit]]) =
       if (waiting.nonEmpty)
         (State(count, waiting.drop(1)), waiting.headOption)
@@ -34,8 +37,8 @@ object Semaphore {
     def apply[F[_]](permits: Int): State[F] = State(permits, List.empty)
   }
 
-  private[this] final class Impl[F[_]: Async](state: Ref[F, State[F]])
-      extends Semaphore[F] {
+  private[this] final class Impl[F[_]: Async](state: Ref[F, State[F]]) extends Semaphore[F] {
+
     def acquire: F[Unit] = Deferred[F, Unit] >>= { process =>
       state.modify {
         case x if (x.count == 0) =>
@@ -48,7 +51,7 @@ object Semaphore {
     def release: F[Unit] = state.modify {
       _.pop()
     } >>= {
-      _.fold(Applicative[F].unit) { _.complete(()) }
+      _.fold(Applicative[F].unit)(_.complete(()))
     }
   }
 }
