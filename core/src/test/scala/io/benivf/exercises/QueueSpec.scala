@@ -1,106 +1,117 @@
 package io.benivf.exercises
 
 import cats.effect._
+import cats.effect.syntax.all._
 import cats.syntax.all._
-
-class QueueSpec extends munit.FunSuite {
+import munit.ScalaCheckSuite
+import org.scalacheck.Gen
+import org.scalacheck.Prop._
+class QueueSpec extends ScalaCheckSuite {
   import core._
   implicit val x = unsafe.IORuntime.global
-  test(
+  val positiveInt = Gen.choose(1, Int.MaxValue)
+
+  property(
     "it should be able to put and take"
   ) {
-    (Queue[String](1) >>= { queue =>
-      val expected = "Hello"
-      queue.put(expected) >>
-        queue.take.map { actual =>
-          assertEquals(expected, actual, s"$actual === $expected")
-        }
-    }).unsafeRunSync()
+    forAll(positiveInt, Gen.alphaStr) { (queueSize: Int, expected: String) =>
+      (Queue[String](queueSize) >>= { queue =>
+        queue.put(expected) >>
+          queue.take.map { actual =>
+            assertEquals(expected, actual, s"$actual === $expected")
+          }
+      }).unsafeRunSync()
+    }
   }
 
-  test(
-    "it should be able to put and take multiple elements when the queue size is 1"
+  property(
+    "it should be able to put and take multiple elements"
   ) {
-    (Queue[String](1) >>= { queue =>
-      val expected = (1 to 10).toList.map(_.toString())
-      expected.traverse { queue.put } >>
-        expected.traverse(_ => queue.take).map { actual =>
-          assertEquals(
-            expected.toSet,
-            actual.toSet,
-            s"${actual} === $expected"
-          ) // Needs to fix this
-        }
-    }).unsafeRunSync()
+    forAll(positiveInt, Gen.listOf[Int](positiveInt)) {
+      (queueSize: Int, expected: List[Int]) =>
+        (Queue[Int](queueSize) >>= { queue =>
+          expected.traverse { queue.put } >>
+            expected.traverse(_ => queue.take).map { actual =>
+              assertEquals(
+                expected,
+                actual,
+                s"${actual} === $expected"
+              )
+            }
+        }).unsafeRunSync()
+    }
   }
 
-  test(
-    "it should be able to put and take multiple elements queue size is the same as the elements"
-  ) {
-    (Queue[String](10) >>= { queue =>
-      val expected = (1 to 10).toList.map(_.toString())
-      expected.traverse { queue.put } >>
-        expected.traverse(_ => queue.take).map { actual =>
-          assertEquals(expected, actual, s"${actual} === $expected")
-        }
-    }).unsafeRunSync()
-  }
-
-  test(
+  property(
     "it should try put when the queue is not full"
   ) {
-    (Queue[String](1) >>= { queue =>
-      val expected = "foo"
-      queue.tryPut(expected).map(assert(_, "it should be able to put")) >>
-        queue.take.map(actual =>
-          assertEquals(expected, actual, s"$expected === $actual")
-        )
-    }).unsafeRunSync()
+    forAll(positiveInt, Gen.alphaStr) { (queueSize: Int, expected: String) =>
+      (Queue[String](queueSize) >>= { queue =>
+        queue.tryPut(expected).map(assert(_, "it should be able to put")) >>
+          queue.take.map(actual =>
+            assertEquals(expected, actual, s"$expected === $actual")
+          )
+      }).unsafeRunSync()
+    }
   }
 
-  test(
+  property(
     "it should try put when the queue is full"
   ) {
-    (Queue[String](1) >>= { queue =>
-      queue.put("foo") >>
-        queue
-          .tryPut("boo")
-          .map(x => assert(!x, s"expected `false` because queue is full"))
-    }).unsafeRunSync()
+    val positiveInt = Gen.choose(1, 1000)
+    forAll(positiveInt) { (queueSize: Int) =>
+      (Queue[Int](queueSize) >>= { queue =>
+        (1 to queueSize).toList.parTraverse { i =>
+          queue.put(i)
+        } >>
+          queue
+            .tryPut(queueSize + 1)
+            .map(x => assert(!x, s"expected `false` because queue is full"))
+      }).unsafeRunSync()
+    }
   }
 
-  test(
+  property(
     "it should try take when the queue is empty"
   ) {
-    (Queue[String](1) >>= { queue =>
-      queue.tryTake.map(x =>
-        assert(x.isEmpty, "it should not be elements in the queue")
-      )
-    }).unsafeRunSync()
+    forAll(positiveInt) { (queueSize: Int) =>
+      (Queue[Float](queueSize) >>= { queue =>
+        queue.tryTake.map(x =>
+          assert(x.isEmpty, "it should not be elements in the queue")
+        )
+      }).unsafeRunSync()
+    }
   }
 
-  test(
+  property(
     "it should try take when the queue is not empty"
   ) {
-    (Queue[String](1) >>= { queue =>
-      val expected = "foo"
-      queue.put(expected) >>
-        queue.tryTake.map(actual =>
-          assertEquals(expected.some, actual, s"$expected === $actual")
-        )
-    }).unsafeRunSync()
+    forAll(positiveInt, Gen.long) { (queueSize: Int, expected: Long) =>
+      (Queue[Long](queueSize) >>= { queue =>
+        queue.put(expected) >>
+          queue.tryTake.map(actual =>
+            assertEquals(expected.some, actual, s"$expected === $actual")
+          )
+      }).unsafeRunSync()
+    }
   }
 
-  test(
+  property(
     "it should peek when the queue has multiple elements"
   ) {
-    (Queue[String](1) >>= { queue =>
-      val expected = (1 to 10).toList.map(_.toString())
-      expected.traverse(queue.put) >>
-        queue.peek.map(actual =>
-          assertEquals(expected.headOption, actual, s"$expected === $actual")
-        )
-    }).unsafeRunSync()
+    forAll(positiveInt, Gen.listOf(positiveInt)) {
+      (queueSize: Int, expected: List[Int]) =>
+        (Queue[Int](queueSize) >>= { queue =>
+          expected.parTraverse(queue.put) >>
+            queue.peek.map(actual =>
+              assertEquals(
+                expected.headOption,
+                actual,
+                s"$expected === $actual"
+              )
+            )
+        }).unsafeRunSync()
+    }
   }
 
 }

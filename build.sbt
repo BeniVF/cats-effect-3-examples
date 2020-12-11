@@ -3,6 +3,7 @@ import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
 val catsV = "2.3.0"
 val catsEffectV = "3.0-8096649"
 val fs2V = "3.0-5795280"
+val mUnitV = "0.7.19"
 
 val kindProjectorV = "0.11.2"
 val betterMonadicForV = "0.3.1"
@@ -95,7 +96,8 @@ lazy val commonSettings = Seq(
     "org.typelevel" %% "cats-effect" % catsEffectV,
     "co.fs2" %% "fs2-core" % fs2V,
     "co.fs2" %% "fs2-io" % fs2V,
-    "org.scalameta" %% "munit" % "0.7.19" % Test
+    "org.scalameta" %% "munit" % mUnitV % Test,
+    "org.scalameta" %% "munit-scalacheck" % mUnitV % Test
   )
 )
 

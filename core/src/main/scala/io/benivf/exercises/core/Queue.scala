@@ -91,10 +91,10 @@ object Queue {
       extends Queue[A] {
     def put(a: A): IO[Unit] = Deferred[IO, Unit] >>= { producer =>
       state.modify {
-        case s if s.hasPendingConsumers =>
-          s.nextConsumer.map(_.complete(a))
         case s if s.size < total =>
           s.enqueue(a) -> IO.unit
+        case s if s.hasPendingConsumers =>
+          s.nextConsumer.map(_.complete(a))
         case s =>
           s.addPendingProducer(a -> producer) -> IO.unit
       }.flatten
@@ -102,34 +102,38 @@ object Queue {
 
     def tryPut(a: A): IO[Boolean] =
       state.modify {
-        case s if s.hasPendingConsumers =>
-          s.nextConsumer.map(_.complete(a).as(true))
         case s if s.size < total =>
           s.enqueue(a) -> true.pure[IO]
+        case s if s.hasPendingConsumers =>
+          s.nextConsumer.map(_.complete(a).as(true))
         case s =>
           s -> false.pure[IO]
       }.flatten
 
     def take: IO[A] = Deferred[IO, A] >>= { consumer =>
       state.modify {
-        case s if s.hasPendingProducers =>
+        case s if s.hasPendingProducers && s.queue.nonEmpty =>
+          val (s1, (a, producer)) = s.nextProducer
+          val (s2, r) = s1.dequeue()
+          s2.enqueue(a) -> producer.complete(()).as(r)
+        case s if s.queue.nonEmpty =>
+          s.dequeue().map(_.pure[IO])
+        case s if s.hasPendingConsumers =>
           s.nextProducer.map { case (a, producer) =>
             producer.complete(()).as(a)
           }
-        case s if s.queue.nonEmpty =>
-          s.dequeue().map(_.pure[IO])
         case s =>
           s.addPendingConsumer(consumer) -> consumer.get
       }.flatten
     }
 
     def tryTake: IO[Option[A]] = state.modify {
+      case s if s.queue.nonEmpty =>
+        s.dequeue().map(_.some.pure[IO])
       case s if s.hasPendingProducers =>
         s.nextProducer.map { case (a, producer) =>
           producer.complete(()).as(a.some)
         }
-      case s if s.size > 0 =>
-        s.dequeue().map(_.some.pure[IO])
       case s =>
         s -> none[A].pure[IO]
     }.flatten
