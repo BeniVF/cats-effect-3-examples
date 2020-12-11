@@ -14,8 +14,8 @@ class SemaphoreSpec extends munit.FunSuite {
       s.acquire >>
         expected.pure[IO].flatTap(_ => s.release) >>= { actual =>
         assertEquals(
-          expected,
           actual,
+          expected,
           "it should get here"
         ).pure[IO]
       }

@@ -11,10 +11,9 @@ class TimeoutSpec extends munit.FunSuite {
   test(
     "it should get the result when the io executes before the timeout duration"
   ) {
-    assert(
-      timeout(10.pure[IO], 10.millis).unsafeRunSync() === 10,
-      "it should not failed when timeout is not reached"
-    )
+    timeout(10.pure[IO], 10.millis)
+      .map(assertEquals(_, 10, "it should not failed when timeout is not reached"))
+      .unsafeRunSync()
   }
 
   test(
