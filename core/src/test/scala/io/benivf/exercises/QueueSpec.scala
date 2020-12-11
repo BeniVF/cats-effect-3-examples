@@ -6,10 +6,12 @@ import cats.syntax.all._
 import munit.ScalaCheckSuite
 import org.scalacheck.Gen
 import org.scalacheck.Prop._
+import scala.concurrent.duration._
 
 class QueueSpec extends ScalaCheckSuite {
   import core._
   implicit val x = unsafe.IORuntime.global
+  override val munitTimeout = 1.second
 
   override def scalaCheckTestParameters =
     super.scalaCheckTestParameters
